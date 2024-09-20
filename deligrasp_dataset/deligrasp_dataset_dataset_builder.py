@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_datasets as tfds
 import tensorflow_hub as hub
-
+import pandas as pd
 
 class DeliGraspDataset(tfds.core.GeneratorBasedBuilder):
     """DatasetBuilder for example dataset."""
@@ -26,14 +26,20 @@ class DeliGraspDataset(tfds.core.GeneratorBasedBuilder):
                 'steps': tfds.features.Dataset({
                     'observation': tfds.features.FeaturesDict({
                         'image': tfds.features.Image(
-                            shape=(640, 480, 3),
+                            shape=(480, 640, 3),
                             dtype=np.uint8,
-                            encoding_format='png',
+                            encoding_format='jpeg',
                             doc='Main camera RGB observation.',
+                        ),
+                        'wrist_image': tfds.features.Image(
+                            shape=(480, 640, 3),
+                            dtype=np.uint8,
+                            encoding_format='jpeg',
+                            doc='Wrist camera RGB observation.',
                         ),
                         'state': tfds.features.Tensor(
                             shape=(16,),
-                            dtype=np.float32,
+                            dtype=np.float64,
                             doc='Robot state, consists of [6x robot joint angles, '
                                 '6x end-effector position (x,y,z,rx,ry,rz relative to base frame), '
                                 '1x gripper position, 1x gripper applied force, ' 
@@ -42,7 +48,7 @@ class DeliGraspDataset(tfds.core.GeneratorBasedBuilder):
                     }),
                     'action': tfds.features.Tensor(
                         shape=(9,),
-                        dtype=np.float32,
+                        dtype=np.float64,
                         doc='Robot action, consists of delta values across [6x ee pos (x, y, z, r, p, y), '
                             '1x delta gripper position, 1x delta gripper applied force, 1x terminate episode].',
                     ),
@@ -66,9 +72,15 @@ class DeliGraspDataset(tfds.core.GeneratorBasedBuilder):
                         dtype=np.bool_,
                         doc='True on last step of the episode if it is a terminal step, True for demos.'
                     ),
-                    'task': tfds.features.Text(
+                    'language_instruction': tfds.features.Text(
                         doc='Language Instruction.'
                     ),
+                    'language_embedding': tfds.features.Tensor(
+                        shape=(512,),
+                        dtype=np.float32,
+                        doc='Kona language embedding. '
+                            'See https://tfhub.dev/google/universal-sentence-encoder-large/5'
+                    ),                
                 }),
                 'episode_metadata': tfds.features.FeaturesDict({
                     'file_path': tfds.features.Text(
@@ -81,7 +93,7 @@ class DeliGraspDataset(tfds.core.GeneratorBasedBuilder):
         """Define data splits."""
         return {
             'train': self._generate_examples(path='data/train/episode_*.npy'),
-            'val': self._generate_examples(path='data/val/episode_*.npy'),
+            # 'val': self._generate_examples(path='data/val/episode_*.npy'),
         }
 
     def _generate_examples(self, path) -> Iterator[Tuple[str, Any]]:
@@ -89,27 +101,34 @@ class DeliGraspDataset(tfds.core.GeneratorBasedBuilder):
 
         def _parse_example(episode_path):
             # load raw data --> this should change for your dataset
-            data = np.load(episode_path, allow_pickle=True)     # this is a list of dicts in our case
-
+            data = np.load(episode_path, allow_pickle=True)  # WERE DOING IT LIVE
+            columns = ['timestamp', 'q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'x', 'y', 'z', 'rx', 'ry', 'rz', 'dx', 'dy', 'dz', 'drx', 'dry', 'drz', 'aperture', 'd_aperture', 'applied_force', 'd_applied_force', 'contact_force', 'task', 'img', 'wrist_img']
+            df = pd.DataFrame(data, columns=columns)
+            # # only use first two rows, debugging
+            # df = df.head(1)
             # assemble episode --> here we're assuming demos so we set reward to 1 at the end
             episode = []
-            for i, step in enumerate(data):
+            for i, step in df.iterrows():
                 # compute Kona language embedding
-                language_embedding = self._embed([step['language_instruction']])[0].numpy()
-
+                language_embedding = self._embed([step['task']])[0].numpy()
+                state = np.array([step['q0'], step['q1'], step['q2'], step['q3'], step['q4'], step['q5'], 
+                                  step['x'], step['y'], step['z'], step['rx'], step['ry'], step['rz'], 
+                                  step['aperture'], step['applied_force'], step['contact_force'], False]) # action_blocked is always False
+                action = np.array([step['dx'], step['dy'], step['dz'], step['drx'], step['dry'], step['drz'],
+                                   step['d_aperture'], step['d_applied_force'], i == (len(data) - 1)]) # terminate episode is 1 on last step
                 episode.append({
                     'observation': {
-                        'image': step['image'],
-                        'wrist_image': step['wrist_image'],
-                        'state': step['state'],
+                        'image': step['img'],
+                        'wrist_image': step['wrist_img'],
+                        'state': state,
                     },
-                    'action': step['action'],
+                    'action': action,
                     'discount': 1.0,
                     'reward': float(i == (len(data) - 1)),
                     'is_first': i == 0,
                     'is_last': i == (len(data) - 1),
                     'is_terminal': i == (len(data) - 1),
-                    'language_instruction': step['language_instruction'],
+                    'language_instruction': step['task'],
                     'language_embedding': language_embedding,
                 })
 
