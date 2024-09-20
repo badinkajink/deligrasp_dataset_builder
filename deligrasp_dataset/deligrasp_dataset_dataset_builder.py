@@ -26,16 +26,16 @@ class DeliGraspDataset(tfds.core.GeneratorBasedBuilder):
                 'steps': tfds.features.Dataset({
                     'observation': tfds.features.FeaturesDict({
                         'image': tfds.features.Image(
-                            shape=(480, 640, 3),
+                            shape=(640, 480, 3),
                             dtype=np.uint8,
                             encoding_format='png',
                             doc='Main camera RGB observation.',
                         ),
                         'state': tfds.features.Tensor(
-                            shape=(17,),
+                            shape=(16,),
                             dtype=np.float32,
                             doc='Robot state, consists of [6x robot joint angles, '
-                                '7x end-effector position (x,y,z,qx,qy,qz,qw relative to base frame), '
+                                '6x end-effector position (x,y,z,rx,ry,rz relative to base frame), '
                                 '1x gripper position, 1x gripper applied force, ' 
                                 '1x gripper contact force, 1x action_blocked flag].',
                         )
@@ -66,7 +66,7 @@ class DeliGraspDataset(tfds.core.GeneratorBasedBuilder):
                         dtype=np.bool_,
                         doc='True on last step of the episode if it is a terminal step, True for demos.'
                     ),
-                    'language_instruction': tfds.features.Text(
+                    'task': tfds.features.Text(
                         doc='Language Instruction.'
                     ),
                 }),
