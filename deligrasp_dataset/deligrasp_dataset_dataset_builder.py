@@ -7,7 +7,7 @@ import tensorflow_datasets as tfds
 import tensorflow_hub as hub
 import pandas as pd
 
-class DeliGraspDataset(tfds.core.GeneratorBasedBuilder):
+class DeligraspDataset(tfds.core.GeneratorBasedBuilder):
     """DatasetBuilder for example dataset."""
 
     VERSION = tfds.core.Version('1.0.0')
@@ -105,7 +105,7 @@ class DeliGraspDataset(tfds.core.GeneratorBasedBuilder):
         def _parse_example(episode_path):
             # load raw data --> this should change for your dataset
             data = np.load(episode_path, allow_pickle=True)  # WERE DOING IT LIVE
-            columns = ['timestamp', 'q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'x', 'y', 'z', 'rx', 'ry', 'rz', 'dx', 'dy', 'dz', 'drx', 'dry', 'drz', 'aperture', 'd_aperture', 'applied_force', 'd_applied_force', 'contact_force', 'task', 'img', 'wrist_img']
+            columns = ['timestamp', 'q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'x', 'y', 'z', 'rx', 'ry', 'rz', 'dx', 'dy', 'dz', 'drx', 'dry', 'drz', 'aperture', 'd_aperture', 'applied_force', 'd_applied_force', 'contact_force', 'task', 'subtask', 'img', 'wrist_img']
             df = pd.DataFrame(data, columns=columns)
             # # only use first two rows, debugging
             # df = df.head(1)
