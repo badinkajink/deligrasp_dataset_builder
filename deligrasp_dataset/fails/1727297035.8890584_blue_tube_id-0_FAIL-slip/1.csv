@@ -1,0 +1,2 @@
+timestamp,q0,q1,q2,q3,q4,q5,x,y,z,rx,ry,rz,dx,dy,dz,drx,dry,drz,aperture,d_aperture,applied_force,d_applied_force,contact_force,subtask,task,img,wrist_img
+1727297046.597712,0.978918,-1.291872,1.656818,-2.505643,-1.203783,-0.573034,-0.220642,-0.579706,0.343662,-2.4785329667025056,-0.04322614020351514,-3.0606196845398763,0.0,0.0,0.0,0.0,0.0,0.0,54.11505960639332,0.0,163.5,0.0,1.1306307102040818,grasp blue tube,grasp blue tube and return to original position,1_1727297046.6399007.jpeg,1_1727297046.63243.jpeg

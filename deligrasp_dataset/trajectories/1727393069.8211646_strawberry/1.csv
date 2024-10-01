@@ -1,0 +1,2 @@
+timestamp,q0,q1,q2,q3,q4,q5,x,y,z,rx,ry,rz,dx,dy,dz,drx,dry,drz,aperture,d_aperture,applied_force,d_applied_force,contact_force,subtask,task,img,wrist_img
+1727393079.7647123,1.32515,-0.850369,1.58353,-3.239686,-1.99222,0.310445,-0.092081,-0.686401,0.177784,-2.140367461655761,0.011947862257980984,2.3850964037935944,0.0,0.0,0.0,0.0,0.0,0.0,29.421173680972704,0.0,0.24525,0.0,0.07559586728395062,grasp strawberry,grasp strawberry and return to original position,1_1727393079.699551.jpeg,1_1727393079.7058098.jpeg

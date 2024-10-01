@@ -1,0 +1,2 @@
+timestamp,q0,q1,q2,q3,q4,q5,x,y,z,rx,ry,rz,dx,dy,dz,drx,dry,drz,aperture,d_aperture,applied_force,d_applied_force,contact_force,subtask,task,img,wrist_img
+1727394091.9904315,0.973133,-1.287425,1.874972,-2.612308,-1.375165,-0.503378,-0.213308,-0.538657,0.248407,-2.654760006745708,-0.06271311622627533,3.083765595722556,0.0,0.0,0.0,0.0,0.0,0.0,28.500047927532638,0.0,0.24525,0.0,0.029542028571428573,grasp mushroom,grasp mushroom and return to original position,1_1727394091.9264317.jpeg,1_1727394091.8935618.jpeg

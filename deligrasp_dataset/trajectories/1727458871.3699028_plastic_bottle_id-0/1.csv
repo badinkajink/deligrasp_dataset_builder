@@ -1,0 +1,2 @@
+timestamp,q0,q1,q2,q3,q4,q5,x,y,z,rx,ry,rz,dx,dy,dz,drx,dry,drz,aperture,d_aperture,applied_force,d_applied_force,contact_force,subtask,task,img,wrist_img
+1727458881.2263215,0.991132,-1.182821,1.450813,-2.011797,-1.496825,-0.693538,-0.25646,-0.604465,0.313687,-2.9643064437341238,-0.05876746290511092,-3.0217218251046485,0.0,0.0,0.0,0.0,0.0,0.0,53.23272449933313,0.0,1.635,0.0,0.5551986925934496,grasp plastic bottle,grasp plastic bottle and return to original position,1_1727458881.2891533.jpeg,1_1727458881.139227.jpeg

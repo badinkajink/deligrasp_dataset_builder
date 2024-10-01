@@ -1,0 +1,2 @@
+timestamp,q0,q1,q2,q3,q4,q5,x,y,z,rx,ry,rz,dx,dy,dz,drx,dry,drz,aperture,d_aperture,applied_force,d_applied_force,contact_force,subtask,task,img,wrist_img
+1727297613.3239813,1.222014,-0.925038,1.727641,-3.65739,-1.679724,0.061161,-0.120181,-0.629925,0.21421,-1.8547579668220449,0.02468945020734538,2.677770799285402,0.0,0.0,0.0,0.0,0.0,0.0,57.37479587777058,0.0,163.5,0.0,7.643664007384,grasp orange bottle,grasp orange bottle and return to original position,1_1727297613.3897545.jpeg,1_1727297613.2287564.jpeg
