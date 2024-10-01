@@ -75,6 +75,9 @@ class DeliGraspDataset(tfds.core.GeneratorBasedBuilder):
                     'language_instruction': tfds.features.Text(
                         doc='Language Instruction.'
                     ),
+                    'subtask': tfds.features.Text(
+                        doc='Language Instruction for subtask.'
+                    ),
                     'language_embedding': tfds.features.Tensor(
                         shape=(512,),
                         dtype=np.float32,
@@ -129,6 +132,7 @@ class DeliGraspDataset(tfds.core.GeneratorBasedBuilder):
                     'is_last': i == (len(data) - 1),
                     'is_terminal': i == (len(data) - 1),
                     'language_instruction': step['task'],
+                    'subtask': step['subtask'],
                     'language_embedding': language_embedding,
                 })
 
