@@ -52,6 +52,26 @@ class DeligraspDataset(tfds.core.GeneratorBasedBuilder):
                         doc='Robot action, consists of delta values across [6x ee pos (x, y, z, r, p, y), '
                             '1x delta gripper position, 1x delta gripper applied force, 1x terminate episode].',
                     ),
+                    'action_dict': tfds.features.FeaturesDict({
+                        'translation': tfds.features.Tensor(
+                            shape=(3,),
+                            dtype=np.float64,
+                            doc='end effector translation delta, relative to base frame',
+                        ),
+                        'rotation': tfds.features.Tensor(
+                            shape=(3,),
+                            dtype=np.float64,
+                            doc='end effector rotation delta, relative to base frame',
+                        ),
+                        'gripper_position': tfds.features.Scalar(
+                            dtype=np.float64,
+                            doc='gripper position delta.',
+                        ),
+                        'gripper_force': tfds.features.Scalar(
+                            dtype=np.float64,
+                            doc='gripper force delta.',
+                        )
+                    }),
                     'discount': tfds.features.Scalar(
                         dtype=np.float32,
                         doc='Discount if provided, default to 1.'
@@ -71,6 +91,10 @@ class DeligraspDataset(tfds.core.GeneratorBasedBuilder):
                     'is_terminal': tfds.features.Scalar(
                         dtype=np.bool_,
                         doc='True on last step of the episode if it is a terminal step, True for demos.'
+                    ),
+                    'timestep_pad_mask': tfds.features.Scalar(
+                        dtype=np.bool_,
+                        doc='False on first step of the episode if context window==2 and for padded steps'
                     ),
                     'language_instruction': tfds.features.Text(
                         doc='Language Instruction.'
@@ -105,12 +129,13 @@ class DeligraspDataset(tfds.core.GeneratorBasedBuilder):
         def _parse_example(episode_path):
             # load raw data --> this should change for your dataset
             data = np.load(episode_path, allow_pickle=True)  # WERE DOING IT LIVE
-            columns = ['timestamp', 'q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'x', 'y', 'z', 'rx', 'ry', 'rz', 'dx', 'dy', 'dz', 'drx', 'dry', 'drz', 'aperture', 'd_aperture', 'applied_force', 'd_applied_force', 'contact_force', 'task', 'subtask', 'img', 'wrist_img']
+            columns = ['timestamp', 'q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'x', 'y', 'z', 'rx', 'ry', 'rz', 'dx', 'dy', 'dz', 'drx', 'dry', 'drz', 'aperture', 'd_aperture', 'applied_force', 'd_applied_force', 'contact_force', 'subtask', 'task', 'img', 'wrist_img']
             df = pd.DataFrame(data, columns=columns)
             # # only use first two rows, debugging
             # df = df.head(1)
             # assemble episode --> here we're assuming demos so we set reward to 1 at the end
             episode = []
+            ctr = 0
             for i, step in df.iterrows():
                 # compute Kona language embedding
                 language_embedding = self._embed([step['task']])[0].numpy()
@@ -126,17 +151,33 @@ class DeligraspDataset(tfds.core.GeneratorBasedBuilder):
                         'state': state,
                     },
                     'action': action,
+                    'action_dict': {
+                        'translation': action[:3],
+                        'rotation': action[3:6],
+                        'gripper_position': action[6],
+                        'gripper_force': action[7],
+                    },
                     'discount': 1.0,
                     'reward': float(i == (len(data) - 1)),
                     'is_first': i == 0,
                     'is_last': i == (len(data) - 1),
                     'is_terminal': i == (len(data) - 1),
+                    'timestep_pad_mask': ctr > 0,  # False on first step if context window==2
                     'language_instruction': step['task'],
                     'subtask': step['subtask'],
                     'language_embedding': language_embedding,
                 })
-
-            # create output data sample
+                ctr += 1
+            # if ctr < 50, we're going to pad the episode with duplicates of the last step, with all d_ terms zeroed out
+            last_step = episode[-1].copy()
+            last_step['action'] = np.zeros_like(last_step['action'])
+            last_step['action_dict']['translation'] = np.zeros_like(last_step['action_dict']['translation'])
+            last_step['action_dict']['rotation'] = np.zeros_like(last_step['action_dict']['rotation'])
+            last_step['action_dict']['gripper_position'] = 0.0
+            last_step['action_dict']['gripper_force'] = 0.0
+            pad_len = 50 - ctr
+            for _ in range(pad_len):
+                episode.append(last_step.copy())            
             sample = {
                 'steps': episode,
                 'episode_metadata': {
